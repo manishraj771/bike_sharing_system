@@ -1,22 +1,26 @@
+# app/__init__.py
+
 from flask import Flask
-from app.models import db
-from app.routes import setup_routes
-from app.utils import init_logging
-from app.config import Config
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
+# Initialize the extensions
+db = SQLAlchemy()
+migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-    
-    # Load configurations
-    app.config.from_object(Config)
-    
-    # Initialize database
-    db.init_app(app)
-    
-    # Initialize logging
-    init_logging(app)
 
-    # Setup routes
-    setup_routes(app)
+    # Load the configuration
+    app.config.from_object('config.Config')
+
+    # Initialize the database and migrations
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    # Import and set up routes after app initialization to avoid circular imports
+    with app.app_context():
+        from app.routes import setup_routes
+        setup_routes(app)
 
     return app
