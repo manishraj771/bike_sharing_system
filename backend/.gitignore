@@ -1,0 +1,14 @@
+# Byte-compiled Python files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Virtual environment
+venv/
+
+# MacOS specific
+.DS_Store
