@@ -1,18 +1,27 @@
-# app/routes.py
-from flask import request, jsonify
-from app.models import db
+from flask import Flask, request, jsonify
+import joblib
 
-def setup_routes(app):
-    @app.route('/book', methods=['POST'])
-    def book_bike():
-        # Import inside the function to avoid circular imports
-        from app.services.payment_service import process_payment
+app = Flask(__name__)
 
-        data = request.json
-        user_id = data['user_id']
-        amount = data['amount']
+# Load the saved model
+model = joblib.load('ml_models/demand_model.pkl')
 
-        # Call the payment service function
-        payment_result = process_payment(user_id, amount)
+@app.route('/predict', methods=['POST'])
+def predict_demand():
+    data = request.get_json()
 
-        return jsonify(payment_result)
+    # Example data format from the POST request
+    location = data['location']
+    time_of_day = data['time_of_day']
+    weather = data['weather']
+    temperature = data['temperature']
+    is_weekend = data['is_weekend']
+    holiday = data['holiday']
+
+    # Make prediction
+    prediction = model.predict([[location, time_of_day, weather, temperature, is_weekend, holiday]])
+
+    return jsonify({'predicted_demand': prediction[0]})
+
+if __name__ == '__main__':
+    app.run(debug=True)
