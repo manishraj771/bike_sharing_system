@@ -14,7 +14,6 @@ def create_app():
     # Initialize logging
     init_logging(app)
 
-    # Setup routes
-    setup_routes(app)
+    
 
     return app

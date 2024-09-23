@@ -4,39 +4,39 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 
-# Load or create a dataset for bike demand prediction (replace with your actual data)
+# Example dataset with all the necessary features
 data = pd.DataFrame({
-    'location': [1, 2, 3, 4, 1, 2, 3, 4],       
-    'time_of_day': [12, 18, 22, 6, 12, 18, 22, 6],  
-    'weather': [0, 1, 0, 1, 0, 1, 0, 1],          
-    'temperature': [30, 28, 35, 32, 29, 26, 24, 22],  
-    'day_of_week': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', 'Monday'],
-    'holiday': [0, 0, 0, 1, 0, 0, 0, 1],  # Binary feature: 1 if it's a holiday, else 0
-    'demand': [100, 150, 50, 200, 120, 130, 80, 220]
+    'location': [1, 2, 3, 4, 1, 2, 3, 4],
+    'time_of_day': [12, 18, 22, 6, 12, 18, 22, 6],
+    'weather': [0, 1, 0, 1, 0, 1, 0, 1],  # 0 for clear, 1 for rainy
+    'temperature': [30, 28, 35, 32, 29, 26, 24, 22],  # Temperature in Celsius
+    'is_weekend': [0, 0, 0, 0, 1, 1, 1, 1],  # 1 for weekend, 0 for weekday
+    'holiday': [0, 1, 0, 1, 0, 0, 1, 1],  # 1 for holiday, 0 for non-holiday
+    'demand': [100, 150, 50, 200, 120, 130, 80, 220]  # Target variable (demand for bikes)
 })
 
-# Feature engineering: Add 'is_weekend' feature
-data['is_weekend'] = data['day_of_week'].apply(lambda x: 1 if x in ['Saturday', 'Sunday'] else 0)
-
 # Features and Target
-X = data[['location', 'time_of_day', 'weather', 'temperature', 'is_weekend', 'holiday']]  # More features
+X = data[['location', 'time_of_day', 'weather', 'temperature', 'is_weekend', 'holiday']]
 y = data['demand']
 
-# Split data
+# Train-test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Train the RandomForest model
-model = RandomForestRegressor(n_estimators=100, random_state=42)
+# Train the model with RandomForestRegressor
+model = RandomForestRegressor()
 model.fit(X_train, y_train)
 
-# Save the model
-joblib.dump(model, 'ml_models/demand_model.pkl')
+# Save the trained model to the `ml_models` directory
+model_path = 'ml_models/demand_model.pkl'
+joblib.dump(model, model_path)
 
-# Evaluate the model
+print(f"Model trained and saved successfully to {model_path}.")
+
+# Evaluate the model on the test data
 y_pred = model.predict(X_test)
 rmse = mean_squared_error(y_test, y_pred, squared=False)
 r2 = r2_score(y_test, y_pred)
 
-print(f"Model trained and saved successfully at ml_models/demand_model.pkl")
+print(f"Model Evaluation on Test Data:")
 print(f"RMSE: {rmse}")
 print(f"R²: {r2}")
