@@ -23,3 +23,4 @@ def setup_routes(app):
 
         # Simulate bike booking logic after successful payment
         return jsonify({"status": "success", "message": "Bike booked successfully.", "payment_details": payment_result})
+        
