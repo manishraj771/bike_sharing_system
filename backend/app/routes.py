@@ -4,6 +4,9 @@ import os
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import logging
+from app.services.payment_service import process_payment
+from app.services.alert_service import send_notification
+from app.dynamic_pricing import calculate_price  # Corrected import path
 
 # Define a Flask Blueprint for routes
 routes_bp = Blueprint('routes', __name__)
@@ -43,6 +46,7 @@ feature_names = ['location', 'time_of_day', 'weather', 'temperature', 'is_weeken
 
 @routes_bp.route('/predict', methods=['POST'])
 def predict_demand():
+    """Predict bike demand and calculate dynamic pricing."""
     try:
         # Extract data from the POST request
         data = request.get_json()
@@ -69,8 +73,7 @@ def predict_demand():
             'weather': [weather],
             'temperature': [temperature],
             'is_weekend': [is_weekend],
-            'holiday': [holiday],
-            'traffic_congestion': [traffic_congestion]
+            'holiday': [holiday]
         })
 
         # Ensure the feature names match the model's expected input
@@ -90,8 +93,39 @@ def predict_demand():
         # Convert prediction to Python native type before returning it
         prediction_value = float(prediction[0])
 
-        # Return the prediction as a JSON response
-        return jsonify({'predicted_demand': prediction_value})
+        # Calculate dynamic pricing based on predicted demand
+        price = calculate_price(prediction_value)
+
+        # Return the prediction and dynamic pricing as a JSON response
+        return jsonify({'predicted_demand': prediction_value, 'dynamic_price': price})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@routes_bp.route('/book', methods=['POST'])
+def book_bike():
+    """Book a bike and process payment."""
+    try:
+        # Get the payment details from the request
+        data = request.get_json()
+        user_id = data.get('user_id')
+        amount = data.get('amount')
+
+        if not user_id or amount is None:
+            return jsonify({"status": "failed", "message": "Invalid request, missing user_id or amount."}), 400
+
+        # Call the payment service to process the payment
+        payment_result = process_payment(user_id, amount)
+
+        # Handle payment failure
+        if payment_result['status'] == 'failed':
+            send_notification(user_id, "Payment failed for booking.")
+            return jsonify(payment_result), 400
+
+        # Simulate bike booking logic after successful payment
+        send_notification(user_id, "Your bike has been booked successfully.")
+        return jsonify({"status": "success", "message": "Bike booked successfully.", "payment_details": payment_result})
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

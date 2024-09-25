@@ -11,9 +11,11 @@ def process_payment(user_id, amount):
     Returns:
     - A dictionary with payment status and details.
     """
-    # This is a mock function, in a real-world scenario you'd call an external payment gateway
     if amount <= 0:
         return {"status": "failed", "message": "Invalid payment amount."}
 
-    # Simulate a successful payment process
+    # Simulate successful payment
+    print(f"Processing payment of ${amount} for user {user_id}.")
     return {"status": "success", "user_id": user_id, "amount": amount, "message": "Payment processed successfully."}
+
+    # In a real-world scenario, you'd connect to a payment API, check for errors, etc.
